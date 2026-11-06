@@ -5,7 +5,9 @@ A Bitfocus Companion module for the Datavideo NVS-33 H.264 streaming encoder and
 It controls streaming, recording, encoder settings, stream server targets, inputs, audio,
 and the production functions exposed by the Datavideo HTTP JSON API.
 
-See [HELP.md](./companion/HELP.md) for the user documentation and [LICENSE](./LICENSE).
+See [HELP.md](./companion/HELP.md) for the user documentation, [CHANGELOG.md](./CHANGELOG.md)
+for the version history, [release notes](./.github/release-notes) for the full text of each
+release, and [LICENSE](./LICENSE) for the licence.
 
 ## Protocol source
 
