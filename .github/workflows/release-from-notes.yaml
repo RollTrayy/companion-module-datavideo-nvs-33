@@ -90,3 +90,47 @@ jobs:
             --title "$TITLE" \
             --notes-file "$NOTES" \
             --verify-tag
+
+  # Packaging lives here rather than in release.yaml, which runs on
+  # 'release: published'. Events raised with secrets.GITHUB_TOKEN do not start
+  # further workflow runs, so a release created by this workflow would never
+  # trigger that one and would stay without its package.
+  package:
+    name: Package module
+    needs: create-release
+
+    permissions:
+      packages: read
+
+    uses: bitfocus/actions/.github/workflows/module-checks.yaml@main
+    with:
+      git-ref: ${{ github.ref_name }}
+      upload-artifact: true
+
+  attach:
+    name: Attach package to release
+    needs: package
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      # Needed to upload the built package as a release asset
+      contents: write
+
+    steps:
+      - name: Download package
+        uses: actions/download-artifact@v8
+        with:
+          # The shared workflow always uploads its package as 'pkg', holding pkg.tgz
+          name: pkg
+
+      - name: Attach package to release
+        # --clobber lets the workflow be re-run against a release that already has
+        # the asset attached.
+        run: |
+          NAME="${GITHUB_REPOSITORY#*/companion-module-}-${TAG#v}"
+          ASSET="${NAME//[^a-zA-Z0-9.-]/-}.tgz"
+          mv pkg.tgz "$ASSET"
+          gh release upload "$TAG" "$ASSET" --clobber --repo "$GITHUB_REPOSITORY"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
