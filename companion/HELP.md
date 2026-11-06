@@ -113,7 +113,8 @@ exposed by this module.
 | `multiview_type`                                                                                   | Monitor output              |
 | `hls_preview`                                                                                      | `On` or `Off`               |
 | `monitor_volume_multiview`, `monitor_volume_pgm`                                                   | Monitor volumes (0–255)     |
-| `encoder_main_bitrate`, `encoder_main_resolution`, `encoder_main_framerate`, `encoder_sub_bitrate` | Encoder settings            |     | `storage_capacity`, `storage_remaining` | Storage card capacity and free space, as reported by the device |
+| `encoder_main_bitrate`, `encoder_main_resolution`, `encoder_main_framerate`, `encoder_sub_bitrate` | Encoder settings            |
+| `storage_capacity`, `storage_remaining`                                                            | Storage card capacity and free space |
 | `device_name`, `firmware_version`, `software_version`                                              | Device identification       |
 
 ## Feedbacks
