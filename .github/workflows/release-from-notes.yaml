@@ -1,0 +1,56 @@
+name: Release from notes
+
+# Creates the GitHub release as soon as a version tag is pushed, using the notes
+# kept in .github/release-notes/<tag>.md. Publishing the release then triggers
+# release.yaml, which builds the package and attaches it to the release.
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  create-release:
+    name: Create release
+
+    if: ${{ !contains(github.repository, 'companion-module-template-') }}
+
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Check out the tag
+        uses: actions/checkout@v5
+
+      - name: Create the release from its notes file
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "A release for $TAG already exists, leaving it untouched."
+            exit 0
+          fi
+
+          NOTES=".github/release-notes/${TAG}.md"
+          TITLE="Datavideo NVS-33 ${TAG#v}"
+
+          if [ -f "$NOTES" ]; then
+            gh release create "$TAG" \
+              --repo "$GITHUB_REPOSITORY" \
+              --title "$TITLE" \
+              --notes-file "$NOTES" \
+              --verify-tag
+          else
+            echo "No notes file at $NOTES, falling back to generated notes."
+            gh release create "$TAG" \
+              --repo "$GITHUB_REPOSITORY" \
+              --title "$TITLE" \
+              --generate-notes \
+              --verify-tag
+          fi
