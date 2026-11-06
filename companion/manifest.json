@@ -1,0 +1,28 @@
+{
+	"$schema": "../node_modules/@companion-module/base/assets/manifest.schema.json",
+	"type": "connection",
+	"id": "datavideo-nvs-33",
+	"name": "Datavideo NVS-33",
+	"shortname": "NVS-33",
+	"description": "Control and monitor a Datavideo NVS-33 H.264 streaming encoder and recorder over its HTTP JSON API",
+	"version": "0.0.0",
+	"license": "MIT",
+	"repository": "git+https://github.com/bitfocus/companion-module-datavideo-nvs-33.git",
+	"bugs": "https://github.com/bitfocus/companion-module-datavideo-nvs-33/issues",
+	"maintainers": [
+		{
+			"name": "RollTrayy",
+			"email": "rolltrayy@users.noreply.github.com"
+		}
+	],
+	"runtime": {
+		"type": "node26",
+		"api": "nodejs-ipc",
+		"apiVersion": "0.0.0",
+		"entrypoint": "../dist/main.js"
+	},
+	"legacyIds": [],
+	"manufacturer": "Datavideo",
+	"products": ["NVS-33"],
+	"keywords": ["streaming", "encoder", "recorder", "h264", "rtmp", "rtsp", "hls", "srt"]
+}
