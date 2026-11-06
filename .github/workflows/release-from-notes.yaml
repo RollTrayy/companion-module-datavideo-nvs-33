@@ -13,8 +13,51 @@ permissions:
   contents: write
 
 jobs:
+  verify-notes:
+    name: Verify release notes are in the tag
+
+    if: ${{ !contains(github.repository, 'companion-module-template-') }}
+
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Check out the tag
+        uses: actions/checkout@v5
+
+      # The release body is read from the tagged commit, so the notes have to be
+      # part of that commit. A tag created before the notes were committed would
+      # otherwise publish an empty or generated body without anyone noticing.
+      # Note that this guard lives in the workflow itself: a tag predating this
+      # file cannot run it, so it protects against missing notes, not against a
+      # tag that predates the whole release tooling.
+      - name: Fail when the notes file is absent from the tagged commit
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+
+          NOTES=".github/release-notes/${TAG}.md"
+          echo "Checking ${TAG} for ${NOTES}"
+
+          if ! git cat-file -e "${TAG}:${NOTES}" 2>/dev/null; then
+            echo "::error file=${NOTES}::${NOTES} is missing from the commit tagged ${TAG}"
+            echo "Commit the notes and move the tag before pushing it again:"
+            echo "  git add ${NOTES} && git commit -m 'Add ${TAG} release notes'"
+            echo "  git tag -f -a ${TAG} -m '<message>' HEAD"
+            exit 1
+          fi
+
+          if [ -z "$(git show "${TAG}:${NOTES}" | tr -d '[:space:]')" ]; then
+            echo "::error file=${NOTES}::${NOTES} is empty in ${TAG}"
+            exit 1
+          fi
+
+          echo "${NOTES} is present in ${TAG}"
+
   create-release:
     name: Create release
+    needs: verify-notes
 
     if: ${{ !contains(github.repository, 'companion-module-template-') }}
 
@@ -40,17 +83,10 @@ jobs:
           NOTES=".github/release-notes/${TAG}.md"
           TITLE="Datavideo NVS-33 ${TAG#v}"
 
-          if [ -f "$NOTES" ]; then
-            gh release create "$TAG" \
-              --repo "$GITHUB_REPOSITORY" \
-              --title "$TITLE" \
-              --notes-file "$NOTES" \
-              --verify-tag
-          else
-            echo "No notes file at $NOTES, falling back to generated notes."
-            gh release create "$TAG" \
-              --repo "$GITHUB_REPOSITORY" \
-              --title "$TITLE" \
-              --generate-notes \
-              --verify-tag
-          fi
+          # verify-notes has already failed the run if the file is absent or
+          # empty, so the release body always comes from the committed notes.
+          gh release create "$TAG" \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "$TITLE" \
+            --notes-file "$NOTES" \
+            --verify-tag
