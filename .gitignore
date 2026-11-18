@@ -10,3 +10,4 @@ DEBUG-*
 # Vendor protocol documents, kept locally only
 /Documentation
 /OUTPUT
+.DS_Store
